@@ -1,6 +1,6 @@
 package com.application.caronavirustracker.utility;
 
-public final class caronaVirusDataUtility {
+public final class CaronaVirusDataUtility {
 
 	
 	public static final String districtData="districtData";

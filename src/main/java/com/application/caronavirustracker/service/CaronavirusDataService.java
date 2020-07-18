@@ -17,7 +17,7 @@ import com.application.caronavirustracker.models.AllStateData;
 import com.application.caronavirustracker.models.CountryData;
 import com.application.caronavirustracker.models.DistrictData;
 import com.application.caronavirustracker.models.StateData;
-import com.application.caronavirustracker.utility.caronaVirusDataUtility;
+import com.application.caronavirustracker.utility.CaronaVirusDataUtility;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -77,6 +77,7 @@ public class CaronavirusDataService {
 		CountryData newCountryData = gson.fromJson(
 				countryDataJson.substring(countryDataJson.indexOf('{'), countryDataJson.lastIndexOf('}') + 1),
 				CountryData.class);
+		newCountryData.setDelta_change_confirmed_cases(newCountryData.getDelta_change_active_cases() + newCountryData.getDelta_change_recovered_cases() + newCountryData.getDelta_change_death_cases());
 		return newCountryData;
 	}
 
@@ -106,10 +107,10 @@ public class CaronavirusDataService {
 
 	public Map<String, DistrictData> getDistrictDataMapFromStateName(String stateName) {
 		JsonObject allStateDistrictData = getAllStateDistrictData();
-		String mappedStateName=caronaVirusDataUtility.getDistrictStateName(stateName);
+		String mappedStateName=CaronaVirusDataUtility.getDistrictStateName(stateName);
 		if(null!=mappedStateName) {
-		JsonObject stateDistrictData = allStateDistrictData.getAsJsonObject(caronaVirusDataUtility.getDistrictStateName(stateName));
-		JsonObject districtData = stateDistrictData.getAsJsonObject(caronaVirusDataUtility.districtData);
+		JsonObject stateDistrictData = allStateDistrictData.getAsJsonObject(CaronaVirusDataUtility.getDistrictStateName(stateName));
+		JsonObject districtData = stateDistrictData.getAsJsonObject(CaronaVirusDataUtility.districtData);
 		return districtData.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> gson.fromJson(entry.getValue(),DistrictData.class)));
 	}
 		return null;

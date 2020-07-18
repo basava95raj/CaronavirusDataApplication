@@ -38,7 +38,7 @@
   <div class="col mb-4 ">
     <div class="card text-white bg-danger mb-3">
       <div class="card-body">
-        <h2 class="card-title d-flex justify-content-center text-center" th:text="${stateData.confirmed}">Confirmed</h2>
+        <h2 class="card-title d-flex justify-content-center text-center count" th:text="${stateData.confirmed}">Confirmed</h2>
         <h4 class="card-text d-flex justify-content-center text-center">Confirmed</h4>
       </div>
     </div>
@@ -46,7 +46,7 @@
   <div class="col mb-4">
     <div class="card text-white bg-warning mb-3">
       <div class="card-body">
-        <h2 class="card-title d-flex justify-content-center text-center" th:text="${stateData.active}"></h2>
+        <h2 class="card-title d-flex justify-content-center text-center count" th:text="${stateData.active}"></h2>
         <h4 class="card-text d-flex justify-content-center text-center">Active</h4>
       </div>
     </div>
@@ -54,7 +54,7 @@
   <div class="col mb-4">
     <div class="card text-white bg-success mb-3">
       <div class="card-body">
-        <h2 class="card-title d-flex justify-content-center text-center" th:text="${stateData.recovered}"></h2>
+        <h2 class="card-title d-flex justify-content-center text-center count" th:text="${stateData.recovered}"></h2>
         <h4 class="card-text d-flex justify-content-center text-center">Recovered</h4>
       </div>
     </div>
@@ -62,7 +62,7 @@
   <div class="col mb-4">
     <div class="card text-white bg-secondary mb-3">
       <div class="card-body">
-        <h2 class="card-title d-flex justify-content-center text-center" th:text="${stateData.deaths}"></h2>
+        <h2 class="card-title d-flex justify-content-center text-center count" th:text="${stateData.deaths}"></h2>
         <h4 class="card-text d-flex justify-content-center text-center">Deceased</h4>
       </div>
     </div>

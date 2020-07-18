@@ -15,6 +15,8 @@ public class CountryData {
 
 	private double death_rate;
 
+	private int delta_change_confirmed_cases;
+	
 	private int delta_change_active_cases;
 
 	private int delta_change_death_cases;
@@ -164,18 +166,26 @@ public class CountryData {
 	public double getRecovered_rate() {
 		return this.recovered_rate;
 	}
+	
+	public int getDelta_change_confirmed_cases() {
+		return delta_change_confirmed_cases;
+	}
+
+	public void setDelta_change_confirmed_cases(int delta_change_confirmed_cases) {
+		this.delta_change_confirmed_cases = delta_change_confirmed_cases;
+	}
 
 	@Override
 	public String toString() {
 		return "CountryData [active_cases=" + active_cases + ", active_rate=" + active_rate + ", confirmed_cases="
 				+ confirmed_cases + ", death_cases=" + death_cases + ", death_rate=" + death_rate
-				+ ", delta_change_active_cases=" + delta_change_active_cases + ", delta_change_death_cases="
-				+ delta_change_death_cases + ", delta_change_recovered_cases=" + delta_change_recovered_cases
-				+ ", last_total_active_cases=" + last_total_active_cases + ", last_total_death_cases="
-				+ last_total_death_cases + ", last_total_recovered_cases=" + last_total_recovered_cases
-				+ ", last_updated=" + last_updated + ", migrated_cases=" + migrated_cases + ", passengers_screened="
-				+ passengers_screened + ", recovered_cases=" + recovered_cases + ", recovered_rate=" + recovered_rate
-				+ "]";
+				+ ", delta_change_confirmed_cases=" + delta_change_confirmed_cases + ", delta_change_active_cases="
+				+ delta_change_active_cases + ", delta_change_death_cases=" + delta_change_death_cases
+				+ ", delta_change_recovered_cases=" + delta_change_recovered_cases + ", last_total_active_cases="
+				+ last_total_active_cases + ", last_total_death_cases=" + last_total_death_cases
+				+ ", last_total_recovered_cases=" + last_total_recovered_cases + ", last_updated=" + last_updated
+				+ ", migrated_cases=" + migrated_cases + ", passengers_screened=" + passengers_screened
+				+ ", recovered_cases=" + recovered_cases + ", recovered_rate=" + recovered_rate + "]";
 	}
 	
 	
