@@ -36,19 +36,19 @@ public class HomeController {
 	public String districts(@PathVariable("stateName") String stateName,Model model) {
 		Stream<StateData> streamStateDataList = caronavirusDataService.getStateDataList().stream().filter(states -> states.getState().equalsIgnoreCase(stateName));
 		List<StateData> stateDataList = streamStateDataList.collect(Collectors.toList());
-		if(!CollectionUtils.isEmpty(stateDataList)) {
-			StateData stateData = stateDataList.get(0);
-			model.addAttribute("stateData", stateData);
-		}else {
-			return "error";
-		}
-		
 		Map<String, DistrictData> districtDataMap = caronavirusDataService.getDistrictDataMapFromStateName(stateName);
-		if(null == districtDataMap) {
-			return "error";
-		}else {
+		if(!CollectionUtils.isEmpty(stateDataList) && null!=districtDataMap) {
+			StateData stateData = stateDataList.get(0);
+			List<DistrictData> districtDataList = districtDataMap.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+			stateData.setDelta_change_confirmed_cases(districtDataList.stream().mapToInt(e -> e.getDelta().getConfirmed()).sum());
+			stateData.setDelta_change_recovered_cases(districtDataList.stream().mapToInt(e -> e.getDelta().getRecovered()).sum());
+			stateData.setDelta_change_death_cases(districtDataList.stream().mapToInt(e -> e.getDelta().getDeceased()).sum());
+			stateData.setDelta_change_active_cases(stateData.getDelta_change_confirmed_cases() - (stateData.getDelta_change_recovered_cases() + stateData.getDelta_change_death_cases()));
+			model.addAttribute("stateData", stateData);
 			model.addAttribute("districtData", districtDataMap);
 			return "district";
+		}else {
+			return "error";
 		}
 	}
 }

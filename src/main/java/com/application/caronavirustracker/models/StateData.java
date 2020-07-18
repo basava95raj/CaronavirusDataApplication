@@ -1,7 +1,7 @@
 package com.application.caronavirustracker.models;
 
 public class StateData {
-	
+
 	private int active;
 
 	private double active_rate;
@@ -17,6 +17,14 @@ public class StateData {
 	private double recovered_rate;
 
 	private String state;
+
+	private int delta_change_confirmed_cases;
+
+	private int delta_change_active_cases;
+
+	private int delta_change_death_cases;
+
+	private int delta_change_recovered_cases;
 
 	public void setActive(int active) {
 		this.active = active;
@@ -82,11 +90,45 @@ public class StateData {
 		return this.state;
 	}
 
+	public int getDelta_change_confirmed_cases() {
+		return delta_change_confirmed_cases;
+	}
+
+	public void setDelta_change_confirmed_cases(int delta_change_confirmed_cases) {
+		this.delta_change_confirmed_cases = delta_change_confirmed_cases;
+	}
+
+	public int getDelta_change_active_cases() {
+		return delta_change_active_cases;
+	}
+
+	public void setDelta_change_active_cases(int delta_change_active_cases) {
+		this.delta_change_active_cases = delta_change_active_cases;
+	}
+
+	public int getDelta_change_death_cases() {
+		return delta_change_death_cases;
+	}
+
+	public void setDelta_change_death_cases(int delta_change_death_cases) {
+		this.delta_change_death_cases = delta_change_death_cases;
+	}
+
+	public int getDelta_change_recovered_cases() {
+		return delta_change_recovered_cases;
+	}
+
+	public void setDelta_change_recovered_cases(int delta_change_recovered_cases) {
+		this.delta_change_recovered_cases = delta_change_recovered_cases;
+	}
+
 	@Override
 	public String toString() {
 		return "StateData [active=" + active + ", active_rate=" + active_rate + ", confirmed=" + confirmed
 				+ ", death_rate=" + death_rate + ", deaths=" + deaths + ", recovered=" + recovered + ", recovered_rate="
-				+ recovered_rate + ", state=" + state + "]";
+				+ recovered_rate + ", state=" + state + ", delta_change_confirmed_cases=" + delta_change_confirmed_cases
+				+ ", delta_change_active_cases=" + delta_change_active_cases + ", delta_change_death_cases="
+				+ delta_change_death_cases + ", delta_change_recovered_cases=" + delta_change_recovered_cases + "]";
 	}
-	
+
 }
