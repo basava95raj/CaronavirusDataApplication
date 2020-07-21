@@ -7,7 +7,7 @@ public final class CaronaVirusDataUtility {
 	public static final String apiErrorMessage = "Unexpected Error occured while fetching the data from API";
 
 	public static String getDistrictStateName(String stateName) {
-		if("Andaman and Nicobar".equalsIgnoreCase(stateName)) {
+		if("Andaman and Nicobar Islands".equalsIgnoreCase(stateName)) {
 			return "Andaman and Nicobar Islands";
 		}else if("Andhra Pradesh".equalsIgnoreCase(stateName)) {
 			return "Andhra Pradesh";
@@ -21,7 +21,7 @@ public final class CaronaVirusDataUtility {
 			return "Chandigarh";
 		}else if("Chhattisgarh".equalsIgnoreCase(stateName)) {
 			return "Chhattisgarh";
-		}else if("Dadra and Nagar Haveli and Daman".equalsIgnoreCase(stateName) || "Daman and Diu".equalsIgnoreCase(stateName)) {
+		}else if("Dadra and Nagar Haveli and Daman and Diu".equalsIgnoreCase(stateName)) {
 			return "Dadra and Nagar Haveli and Daman and Diu";
 		}else if("Delhi".equalsIgnoreCase(stateName)) {
 			return "Delhi";

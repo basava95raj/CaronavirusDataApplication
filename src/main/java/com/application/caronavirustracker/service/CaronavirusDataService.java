@@ -1,6 +1,6 @@
 package com.application.caronavirustracker.service;
 
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,22 +15,25 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.application.caronavirustracker.models.AllStateData;
-import com.application.caronavirustracker.models.CountryData;
+import com.application.caronavirustracker.models.AllData;
+import com.application.caronavirustracker.models.Data;
 import com.application.caronavirustracker.models.DistrictData;
-import com.application.caronavirustracker.models.StateData;
+import com.application.caronavirustracker.models.Regional;
+import com.application.caronavirustracker.models.Summary;
 import com.application.caronavirustracker.utility.CaronaVirusDataUtility;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 @Service
 public class CaronavirusDataService {
 
-	@Value("${caronavirus.country.data.api}")
-	private String caronaVirusCountryDataApi;
+	@Value("${caronavirus.india.data.latest.api}")
+	private String caronavirusIndiaDataLatestApi;
 
-	@Value("${caronavirus.state.data.api}")
-	private String caronaVirusStateDataApi;
+	@Value("${caronavirus.india.data.history.api}")
+	private String caronavirusIndiaDataHistoryApi;
 
 	@Value("${caronavirus.state.district.data.api}")
 	private String caronavirusStateDistrictDataApi;
@@ -41,96 +44,76 @@ public class CaronavirusDataService {
 	@Autowired
 	private Gson gson;
 
-	private CountryData countryData;
-
-	private List<StateData> stateDataList = new ArrayList<StateData>();
+	private AllData allData;
 
 	private JsonObject allStateDistrictData;
 
-	@Value("${last.confirmed.country.cases}")
-	private int lastConfirmedCountryCases;
-	
-	@Value("${last.confirmed.country.recovered.cases}")
-	private int lastConfirmedCountryRecoveredCases;
-	
-	@Value("${last.confirmed.country.death.cases}")
-	private int lastConfirmedCountryDeathCases;
-	
-	@Value("${last.confirmed.country.active.cases}")
-	private int lastConfirmedCountryActiveCases;
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CaronavirusDataService.class);
 
 	@PostConstruct
 	@Scheduled(fixedDelayString = "${timer.fetch.caronavirus.data.delay}")
 	public void fetchCaronaVirusData() {
 		try {
-			CountryData newCountryData = fetchCountryData();
-			this.countryData = newCountryData;
+			AllData newAllData = fetchAllData();
+			this.allData = newAllData;
+			LOGGER.debug(allData.toString());
 		} catch (Exception e) {
-			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":CountryDataAPI: " + e.getMessage());
+			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":AllDataAPI: " + e.getMessage());
 		}
-		try {
-			List<StateData> newStateDataList = fetchStateData();
-			this.stateDataList = newStateDataList;
-		} catch (Exception e) {
-			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":StateDataAPI: " + e.getMessage());
-		}
+
 		try {
 			JsonObject newDistrictDataJson = fetchDistrictData();
 			this.allStateDistrictData = newDistrictDataJson;
+			LOGGER.debug(allData.toString());
 		} catch (Exception e) {
 			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":DistrictDataAPI: " + e.getMessage());
 		}
+	}
 
+	private AllData fetchAllData() {
+		AllData allData = restTemplate.getForObject(caronavirusIndiaDataLatestApi, AllData.class);
+		String allDataHistoryJson = restTemplate.getForObject(caronavirusIndiaDataHistoryApi, String.class);
+		JsonObject newAllDataHistoryJson = gson.fromJson(allDataHistoryJson, JsonObject.class);
+		JsonElement dataListElement = newAllDataHistoryJson.get("data");
+		Type listType = new TypeToken<List<Data>>() {
+		}.getType();
+		List<Data> dataList = gson.fromJson(dataListElement, listType);
+		Data data = dataList.get(dataList.size() - 2);
+
+		// CountryData
+		Summary previousDaySummary = data.getSummary();
+		Summary currentDaySummary = allData.getData().getSummary();
+		currentDaySummary.setActive(
+				currentDaySummary.getTotal() - (currentDaySummary.getDischarged() + currentDaySummary.getDeaths()));
+		currentDaySummary.setDelta_change_confirmed_cases(currentDaySummary.getTotal() - previousDaySummary.getTotal());
+		currentDaySummary.setDelta_change_recovered_cases(
+				currentDaySummary.getDischarged() - previousDaySummary.getDischarged());
+		currentDaySummary.setDelta_change_death_cases(currentDaySummary.getDeaths() - previousDaySummary.getDeaths());
+		currentDaySummary.setDelta_change_active_cases(currentDaySummary.getDelta_change_confirmed_cases()
+				- (currentDaySummary.getDelta_change_recovered_cases()
+						+ currentDaySummary.getDelta_change_death_cases()));
+
+		// StateData
+		int index = 0;
+		List<Regional> previousStateDataList = data.getRegional();
+		for (Regional state : allData.getData().getRegional()) {
+			Regional previousDayStateData = previousStateDataList.get(index);
+			state.setActive(state.getTotalConfirmed() - (state.getDischarged() + state.getDeaths()));
+			state.setDelta_change_confirmed_cases(state.getTotalConfirmed() - previousDayStateData.getTotalConfirmed());
+			state.setDelta_change_recovered_cases(state.getDischarged() - previousDayStateData.getDischarged());
+			state.setDelta_change_death_cases(state.getDeaths() - previousDayStateData.getDeaths());
+			state.setDelta_change_active_cases(state.getDelta_change_confirmed_cases()
+					- (state.getDelta_change_recovered_cases() + state.getDelta_change_death_cases()));
+			index++;
+		}
+
+		return allData;
 	}
 
 	private JsonObject fetchDistrictData() {
 		String districtDataJson = restTemplate.getForObject(caronavirusStateDistrictDataApi, String.class);
 		JsonObject newDistrictDataJson = gson.fromJson(districtDataJson, JsonObject.class);
 		return newDistrictDataJson;
-	}
-
-	private List<StateData> fetchStateData() {
-		String stateDataJson = restTemplate.getForObject(caronaVirusStateDataApi, String.class);
-		AllStateData allStateData = gson.fromJson(
-				stateDataJson.substring(stateDataJson.indexOf('{'), stateDataJson.lastIndexOf('}') + 1),
-				AllStateData.class);
-		return allStateData.getState_data();
-	}
-
-	private CountryData fetchCountryData() {
-		String countryDataJson = restTemplate.getForObject(caronaVirusCountryDataApi, String.class);
-		CountryData newCountryData = gson.fromJson(
-				countryDataJson.substring(countryDataJson.indexOf('{'), countryDataJson.lastIndexOf('}') + 1),
-				CountryData.class);
-		newCountryData.setDelta_change_confirmed_cases(newCountryData.getDelta_change_active_cases()
-				+ newCountryData.getDelta_change_recovered_cases() + newCountryData.getDelta_change_death_cases());
-		return newCountryData;
-	}
-
-	public CountryData getCountryData() {
-		return countryData;
-	}
-
-	public void setCountryData(CountryData countryData) {
-		this.countryData = countryData;
-	}
-
-	public List<StateData> getStateDataList() {
-		return stateDataList;
-	}
-
-	public void setStateDataList(List<StateData> stateDataList) {
-		this.stateDataList = stateDataList;
-	}
-
-	public JsonObject getAllStateDistrictData() {
-		return allStateDistrictData;
-	}
-
-	public void setAllStateDistrictData(JsonObject allStateDistrictData) {
-		this.allStateDistrictData = allStateDistrictData;
 	}
 
 	public Map<String, DistrictData> getDistrictDataMapFromStateName(String stateName) {
@@ -146,28 +129,19 @@ public class CaronavirusDataService {
 		return null;
 	}
 
-	public CountryData fetchCountryDataFromStateData(List<StateData> stateDataList2) {
-		countryData = new CountryData();
-		countryData.setConfirmed_cases(stateDataList2.stream().mapToInt(e -> e.getConfirmed()).sum());
-		countryData.setActive_cases(stateDataList2.stream().mapToInt(e -> e.getActive()).sum());
-		countryData.setRecovered_cases(stateDataList2.stream().mapToInt(e -> e.getRecovered()).sum());
-		countryData.setDeath_cases(stateDataList2.stream().mapToInt(e -> e.getDeaths()).sum());
-		
-		int deltaConfirmedCountryCases = countryData.getConfirmed_cases() - lastConfirmedCountryCases;
-		int deltaConfirmedRecoveredCases = countryData.getRecovered_cases() - lastConfirmedCountryRecoveredCases;
-		int deltaConfirmedDeathCases = countryData.getDeath_cases() - lastConfirmedCountryDeathCases;
-		int deltaConfirmedActiveCases = countryData.getActive_cases() - lastConfirmedCountryActiveCases;
-		
-		countryData.setDelta_change_confirmed_cases(deltaConfirmedCountryCases);
-		countryData.setDelta_change_active_cases(deltaConfirmedActiveCases);
-		countryData.setDelta_change_recovered_cases(deltaConfirmedRecoveredCases);
-		countryData.setDelta_change_death_cases(deltaConfirmedDeathCases);
-		
-		lastConfirmedCountryCases+=deltaConfirmedCountryCases;
-		lastConfirmedCountryActiveCases+=deltaConfirmedActiveCases;
-		lastConfirmedCountryRecoveredCases+=deltaConfirmedRecoveredCases;
-		lastConfirmedCountryDeathCases+=deltaConfirmedDeathCases;
-		
-		return countryData;
+	public AllData getAllData() {
+		return allData;
+	}
+
+	public void setAllData(AllData allData) {
+		this.allData = allData;
+	}
+
+	public JsonObject getAllStateDistrictData() {
+		return allStateDistrictData;
+	}
+
+	public void setAllStateDistrictData(JsonObject allStateDistrictData) {
+		this.allStateDistrictData = allStateDistrictData;
 	}
 }
