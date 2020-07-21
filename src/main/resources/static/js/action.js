@@ -1,6 +1,6 @@
 $(document).ready(function () {
 var table =$('#dtDynamicVerticalScroll').DataTable({
-"scrollY": "50vh",
+"scrollY": "55vh",
 "scrollCollapse": true,
 "lengthChange": false,
 "bInfo" : false,

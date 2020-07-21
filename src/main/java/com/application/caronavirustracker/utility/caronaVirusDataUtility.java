@@ -4,6 +4,7 @@ public final class CaronaVirusDataUtility {
 
 	
 	public static final String districtData="districtData";
+	public static final String apiErrorMessage = "Unexpected Error occured while fetching the data from API";
 
 	public static String getDistrictStateName(String stateName) {
 		if("Andaman and Nicobar".equalsIgnoreCase(stateName)) {

@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,17 +47,30 @@ public class CaronavirusDataService {
 
 	private JsonObject allStateDistrictData;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(CaronavirusDataService.class);
+
 	@PostConstruct
 	@Scheduled(fixedDelayString = "${timer.fetch.caronavirus.data.delay}")
 	public void fetchCaronaVirusData() {
-		CountryData newCountryData = fetchCountryData();
-		this.countryData = newCountryData;
+		try {
+			CountryData newCountryData = fetchCountryData();
+			this.countryData = newCountryData;
+		} catch (Exception e) {
+			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":CountryDataAPI: " + e.getMessage());
+		}
+		try {
+			List<StateData> newStateDataList = fetchStateData();
+			this.stateDataList = newStateDataList;
+		} catch (Exception e) {
+			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":StateDataAPI: " + e.getMessage());
+		}
+		try {
+			JsonObject newDistrictDataJson = fetchDistrictData();
+			this.allStateDistrictData = newDistrictDataJson;
+		} catch (Exception e) {
+			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":DistrictDataAPI: " + e.getMessage());
+		}
 
-		List<StateData> newStateDataList = fetchStateData();
-		this.stateDataList = newStateDataList;
-
-		JsonObject newDistrictDataJson = fetchDistrictData();
-		this.allStateDistrictData = newDistrictDataJson;
 	}
 
 	private JsonObject fetchDistrictData() {
@@ -77,7 +92,8 @@ public class CaronavirusDataService {
 		CountryData newCountryData = gson.fromJson(
 				countryDataJson.substring(countryDataJson.indexOf('{'), countryDataJson.lastIndexOf('}') + 1),
 				CountryData.class);
-		newCountryData.setDelta_change_confirmed_cases(newCountryData.getDelta_change_active_cases() + newCountryData.getDelta_change_recovered_cases() + newCountryData.getDelta_change_death_cases());
+		newCountryData.setDelta_change_confirmed_cases(newCountryData.getDelta_change_active_cases()
+				+ newCountryData.getDelta_change_recovered_cases() + newCountryData.getDelta_change_death_cases());
 		return newCountryData;
 	}
 
@@ -107,12 +123,14 @@ public class CaronavirusDataService {
 
 	public Map<String, DistrictData> getDistrictDataMapFromStateName(String stateName) {
 		JsonObject allStateDistrictData = getAllStateDistrictData();
-		String mappedStateName=CaronaVirusDataUtility.getDistrictStateName(stateName);
-		if(null!=mappedStateName) {
-		JsonObject stateDistrictData = allStateDistrictData.getAsJsonObject(CaronaVirusDataUtility.getDistrictStateName(stateName));
-		JsonObject districtData = stateDistrictData.getAsJsonObject(CaronaVirusDataUtility.districtData);
-		return districtData.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> gson.fromJson(entry.getValue(),DistrictData.class)));
-	}
+		String mappedStateName = CaronaVirusDataUtility.getDistrictStateName(stateName);
+		if (null != mappedStateName) {
+			JsonObject stateDistrictData = allStateDistrictData
+					.getAsJsonObject(CaronaVirusDataUtility.getDistrictStateName(stateName));
+			JsonObject districtData = stateDistrictData.getAsJsonObject(CaronaVirusDataUtility.districtData);
+			return districtData.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),
+					entry -> gson.fromJson(entry.getValue(), DistrictData.class)));
+		}
 		return null;
 	}
 }
