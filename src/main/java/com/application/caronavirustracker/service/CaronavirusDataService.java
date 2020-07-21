@@ -47,6 +47,18 @@ public class CaronavirusDataService {
 
 	private JsonObject allStateDistrictData;
 
+	@Value("${last.confirmed.country.cases}")
+	private int lastConfirmedCountryCases;
+	
+	@Value("${last.confirmed.country.recovered.cases}")
+	private int lastConfirmedCountryRecoveredCases;
+	
+	@Value("${last.confirmed.country.death.cases}")
+	private int lastConfirmedCountryDeathCases;
+	
+	@Value("${last.confirmed.country.active.cases}")
+	private int lastConfirmedCountryActiveCases;
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CaronavirusDataService.class);
 
 	@PostConstruct
@@ -132,5 +144,30 @@ public class CaronavirusDataService {
 					entry -> gson.fromJson(entry.getValue(), DistrictData.class)));
 		}
 		return null;
+	}
+
+	public CountryData fetchCountryDataFromStateData(List<StateData> stateDataList2) {
+		countryData = new CountryData();
+		countryData.setConfirmed_cases(stateDataList.stream().mapToInt(e -> e.getConfirmed()).sum());
+		countryData.setActive_cases(stateDataList.stream().mapToInt(e -> e.getActive()).sum());
+		countryData.setRecovered_cases(stateDataList.stream().mapToInt(e -> e.getRecovered()).sum());
+		countryData.setDeath_cases(stateDataList.stream().mapToInt(e -> e.getDeaths()).sum());
+		
+		int deltaConfirmedCountryCases = countryData.getConfirmed_cases() - lastConfirmedCountryCases;
+		int deltaConfirmedRecoveredCases = countryData.getRecovered_cases() - lastConfirmedCountryRecoveredCases;
+		int deltaConfirmedDeathCases = countryData.getDeath_cases() - lastConfirmedCountryDeathCases;
+		int deltaConfirmedActiveCases = countryData.getActive_cases() - lastConfirmedCountryActiveCases;
+		
+		countryData.setDelta_change_confirmed_cases(deltaConfirmedCountryCases);
+		countryData.setDelta_change_active_cases(deltaConfirmedActiveCases);
+		countryData.setDelta_change_recovered_cases(deltaConfirmedRecoveredCases);
+		countryData.setDelta_change_death_cases(deltaConfirmedDeathCases);
+		
+		lastConfirmedCountryCases+=deltaConfirmedCountryCases;
+		lastConfirmedCountryActiveCases+=deltaConfirmedActiveCases;
+		lastConfirmedCountryRecoveredCases+=deltaConfirmedRecoveredCases;
+		lastConfirmedCountryDeathCases+=deltaConfirmedDeathCases;
+		
+		return countryData;
 	}
 }
