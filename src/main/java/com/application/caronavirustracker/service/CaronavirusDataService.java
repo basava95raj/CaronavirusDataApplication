@@ -148,10 +148,10 @@ public class CaronavirusDataService {
 
 	public CountryData fetchCountryDataFromStateData(List<StateData> stateDataList2) {
 		countryData = new CountryData();
-		countryData.setConfirmed_cases(stateDataList.stream().mapToInt(e -> e.getConfirmed()).sum());
-		countryData.setActive_cases(stateDataList.stream().mapToInt(e -> e.getActive()).sum());
-		countryData.setRecovered_cases(stateDataList.stream().mapToInt(e -> e.getRecovered()).sum());
-		countryData.setDeath_cases(stateDataList.stream().mapToInt(e -> e.getDeaths()).sum());
+		countryData.setConfirmed_cases(stateDataList2.stream().mapToInt(e -> e.getConfirmed()).sum());
+		countryData.setActive_cases(stateDataList2.stream().mapToInt(e -> e.getActive()).sum());
+		countryData.setRecovered_cases(stateDataList2.stream().mapToInt(e -> e.getRecovered()).sum());
+		countryData.setDeath_cases(stateDataList2.stream().mapToInt(e -> e.getDeaths()).sum());
 		
 		int deltaConfirmedCountryCases = countryData.getConfirmed_cases() - lastConfirmedCountryCases;
 		int deltaConfirmedRecoveredCases = countryData.getRecovered_cases() - lastConfirmedCountryRecoveredCases;
