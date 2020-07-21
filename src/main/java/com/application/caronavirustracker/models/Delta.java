@@ -1,5 +1,8 @@
 package com.application.caronavirustracker.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Delta {
 
 	private int confirmed;
