@@ -64,7 +64,7 @@ public class CaronavirusDataService {
 		try {
 			JsonObject newDistrictDataJson = fetchDistrictData();
 			this.allStateDistrictData = newDistrictDataJson;
-			LOGGER.debug(allData.toString());
+			LOGGER.debug(allStateDistrictData.toString());
 		} catch (Exception e) {
 			LOGGER.error(CaronaVirusDataUtility.apiErrorMessage + ":DistrictDataAPI: " + e.getMessage());
 		}
